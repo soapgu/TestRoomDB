@@ -16,8 +16,10 @@ import java.util.stream.Collectors;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -41,15 +43,23 @@ public class MainActivity extends AppCompatActivity {
         txt_name = findViewById(R.id.txt_name);
 
         this.findViewById(R.id.btn_query).setOnClickListener( v -> {
-            disposables.add( db.recordDao().loadAllRecords()
+            disposables.add( db.recordDao().loadAllRecords( AppDatabase.limit )
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe( records -> {
-                                tv_count.setText( String.valueOf( records.size() ) );
+                                //tv_count.setText( String.valueOf( records.size() ) );
                                 String names = records.stream().map(t->t.name).collect(Collectors.joining(","));
                                 tv_names.setText( names );
                             },
                             throwable -> Logger.e(throwable,"load records error")) );
+
+            disposables.add( db.recordDao().loadRecordCount().subscribeOn(Schedulers.io())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe( count -> {
+                                //tv_count.setText( String.valueOf( records.size() ) );
+                                tv_count.setText( String.valueOf(count) );
+                            },
+                            throwable -> Logger.e(throwable,"load records count error")) );
         } );
 
         this.findViewById(R.id.btn_add).setOnClickListener( v-> {

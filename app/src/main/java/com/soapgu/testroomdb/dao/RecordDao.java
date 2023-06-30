@@ -16,8 +16,11 @@ import io.reactivex.rxjava3.core.Single;
 
 @Dao
 public interface RecordDao {
-    @Query("SELECT * from records")
-    public Single<List<Record>> loadAllRecords();
+    @Query("SELECT * from records LIMIT :limit")
+    public Single<List<Record>> loadAllRecords( int limit );
+
+    @Query("SELECT EXISTS(SELECT 1 FROM records LIMIT 1)")
+    public Single<Boolean> loadRecordCount();
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     public Completable insertRecord(Record record);
